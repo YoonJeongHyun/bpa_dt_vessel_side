@@ -92,10 +92,14 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         REMAINED_DISTANCE = vssl_optimal_routing_df.loc[idx, "REMAINED_DISTANCE"]
 
         TOS_ETA = vssl_optimal_routing_df.loc[idx, "ETA_PORT_TOS"]
-        RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
-        PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
-        BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
-
+        try:
+            RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
+            PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
+            BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
+        except:
+            BERTH = "OT"
+            RTA = pd.to_datetime("2022-01-01 00:00:00")
+            PTA = pd.to_datetime("2022-01-01 00:00:00")
         if abs(ETA - TOS_ETA) < datetime.timedelta(hours=1):
             STATUS = "ON_TIME"
         elif ETA > TOS_ETA:
