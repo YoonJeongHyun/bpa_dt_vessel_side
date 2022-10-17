@@ -7,8 +7,8 @@
 ---
 
 # Run
-- pnit 내부 테스트
-python main.py pnit
+- pnit 내부 테스트   
+`python main.py pnit`
 
-- 외부 테스트
-python main.py
+- 외부 테스트   
+`python main.py`
