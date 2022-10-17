@@ -4,3 +4,11 @@
 ### 2. 선박 최적항로 도출
 ### 3. 최적 선석 계획 도출
 ### 4. 입출항 선박 모니터링 
+---
+
+# Run
+- pnit 내부 테스트
+python main.py pnit
+
+- 외부 테스트
+python main.py
