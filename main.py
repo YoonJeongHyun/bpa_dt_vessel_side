@@ -9,6 +9,7 @@ import os
 import cx_Oracle
 import pandas as pd
 import warnings
+import sys
 
 warnings.filterwarnings(action="ignore")
 import random
@@ -750,7 +751,7 @@ def main(mode="outside"):
 
     # orbcomn_fleet_delete()
 
-    observing_mmsi_list, mmsi_vessel_df = search_for_vessels(tos_plan_berth_df, tos_vessel)
+    observing_mmsi_list, mmsi_vessel_df, no_mmsi_list = search_for_vessels(tos_plan_berth_df, tos_vessel)
     data_dict = ais_monitoring(observing_mmsi_list, mmsi_vessel_df=mmsi_vessel_df,
                                tos_plan_berth_df=tos_plan_berth_df)
     busan_arriving_vessels = make_busan_arriving_vessels_df(data_dict, PNIT_anchorage)
@@ -999,19 +1000,25 @@ def main(mode="outside"):
              departure_monitoring_columns,
              departure_monitoring,
              'departure_monitoring')
-
+    return no_mmsi_list
 
 if __name__ == "__main__":
     cnt = 0
     error_cnt = 0
+    try:
+        location = sys.argv[1]
+    except:
+        location = "outside"
+
     while True:
         # try:
         os.system('cls')
-        main()
+        no_mmsi_list = main(location)
         cnt += 1
         print("Finished")
-        print(f"현재까지 돌아간 횟수 : {cnt} (30분에 1번 돌아감) ")
-        time.sleep(1800)
+        print(f"현재까지 돌아간 횟수 : {cnt} (5분에 1번 돌아감) ")
+        print(no_mmsi_list)
+        time.sleep(300)
         # except:
         #     error_cnt += 1
         #     print(f"오류 발생 {error_cnt}회 째")

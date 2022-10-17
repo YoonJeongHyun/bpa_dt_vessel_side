@@ -27,7 +27,7 @@ def search_for_vessels(tos_plan_berth_df, tos_vessel):
     mode = 0
     if len(unfounded_vessel_list) != 0:
         vsl_mmsi_dict_new = crawling_mmsi(unfounded_vessel_list)
-        capa_dict_new = capacity_crawling(unfounded_vessel_list)
+        capa_dict_new = capacity_crawling(tos_vessel, unfounded_vessel_list)
         df1 = pd.DataFrame(vsl_mmsi_dict_new)
         df2 = pd.DataFrame(capa_dict_new)
         dfnew = pd.merge(df1, df2).drop_duplicates()
@@ -55,7 +55,7 @@ def search_for_vessels(tos_plan_berth_df, tos_vessel):
             mmsi = str(mmsi)[:-2]
         observing_mmsi_list.append(mmsi)
 
-    return observing_mmsi_list, mmsi_vessel_df
+    return observing_mmsi_list, mmsi_vessel_df, no_mmsi_list
 
 
 def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_plan_berth_df=None, username='sewonkim',
