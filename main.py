@@ -645,7 +645,6 @@ tug_allocation_columns = ['TA_ID', 'VSSL_ENG_NM', 'BERTH', 'et', 'TUG_START_TIME
 arrival_monitoring_sql_drop = 'DROP TABLE ARRIVAL_MONITORING'
 
 arrival_monitoring_sql_create = """CREATE TABLE ARRIVAL_MONITORING (
-VSL_CD VARCHAR2(40),
 VSL_NM VARCHAR2(40),
 VOYAGE VARCHAR2(40),
 REMAINED_DISTANCE NUMBER,
@@ -666,7 +665,7 @@ arrival_monitoring_sql_create = arrival_monitoring_sql_create.replace("\n", "")
 arrival_monitoring_sql_grant = 'GRANT ALL ON ARRIVAL_MONITORING TO ispark'
 
 arrival_monitoring_columns = [
-    'VSL_CD', 'VSL_NM', 'VOYAGE', 'REMAINED_DISTANCE', 'FUEL_CONSUMPTION',
+    'VSL_NM', 'VOYAGE', 'REMAINED_DISTANCE', 'FUEL_CONSUMPTION',
     'CO2_EMISSION', 'BERTH', 'MEAN_SPEED', 'TOS_ETA', 'ETA', 'RTA', 'PTA',
     'STATUS', 'TIMESTAMP'
 ]
@@ -675,7 +674,6 @@ arrival_monitoring_columns = [
 departure_monitoring_sql_drop = 'DROP TABLE DEPARTURE_MONITORING'
 
 departure_monitoring_sql_create = """CREATE TABLE DEPARTURE_MONITORING (
-VSL_CD VARCHAR2(40),
 VSL_NM VARCHAR2(40),
 VOYAGE VARCHAR2(40),
 DWELL_TIME VARCHAR2(40),
@@ -692,7 +690,7 @@ departure_monitoring_sql_create = departure_monitoring_sql_create.replace(
 departure_monitoring_sql_grant = 'GRANT ALL ON DEPARTURE_MONITORING TO ispark'
 
 departure_monitoring_columns = [
-    'VSL_CD', 'VSL_NM', 'VOYAGE', 'DWELL_TIME', 'BERTH', 'TOS_ETD', 'ETD',
+   'VSL_NM', 'VOYAGE', 'DWELL_TIME', 'BERTH', 'TOS_ETD', 'ETD',
     'STATUS', 'TIMESTAMP'
 ]
 

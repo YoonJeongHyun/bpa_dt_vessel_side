@@ -97,31 +97,48 @@ def crawling_mmsi(vsl_name_list):
             By.CSS_SELECTOR,
             'body > div > div > main > div > form > div > button')
         submit_btn.click()
-        try:
-            if len(
-                    driver.find_elements(
-                        By.CSS_SELECTOR,
-                        'body > div > div > main > div > section > table > tbody > tr'
-                    )) > 1:
-                vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-                vsl_mmsi_dict["IMO"].append("")
-                vsl_mmsi_dict["mmsi_no"].append("")
-                continue
+        if len(driver.find_elements(By.CSS_SELECTOR,
+                                    'body > div > div > main > div > section > table > tbody > tr')) == 1:
             ship_link = driver.find_element(
                 By.CSS_SELECTOR,
                 'body > div > div > main > div > section > table > tbody > tr > td > a'
             )
             ship_link = ship_link.get_attribute('href')
-            IMO = ship_link.split("IMO-")[1].split("-")[0]
-            MMSI_no = ship_link.split('MMSI-')[1]
-            vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-            vsl_mmsi_dict["IMO"].append(IMO)
-            vsl_mmsi_dict["mmsi_no"].append(MMSI_no)
+            driver.get(ship_link)
+            time.sleep(1)
 
-        except:
+            detail = driver.find_element(
+                By.CSS_SELECTOR,
+                'body > div.body-wrapper > div > main > div > div.column.ship-section > p.text1')
+            imo = detail.text.split("IMO: ")[1].split(",")[0]
+            mmsi = detail.text.split("MMSI ")[1].split(")")[0]
+
             vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-            vsl_mmsi_dict["IMO"].append(0)
-            vsl_mmsi_dict["mmsi_no"].append(0)
+            vsl_mmsi_dict["IMO"].append(imo)
+            vsl_mmsi_dict["mmsi_no"].append(mmsi)
+        else:
+            ship_link = driver.find_element(
+                By.CSS_SELECTOR,
+                'body > div > div > main > div > section > table > tbody > tr > td > a'
+            )
+            ship_link = ship_link.get_attribute('href')
+            driver.get(ship_link)
+            time.sleep(1)
+
+            detail = driver.find_element(
+                By.CSS_SELECTOR,
+                'body > div.body-wrapper > div > main > div > div.column.ship-section > p.text1')
+            if not detail.text.split("is")[1].split("built")[0].strip() == "a Container Ship":
+                continue
+            else:
+                imo = detail.text.split("IMO: ")[1].split(",")[0]
+                mmsi = detail.text.split("MMSI ")[1].split(")")[0]
+
+                vsl_mmsi_dict["VSL_NM"].append(vsl_name)
+                vsl_mmsi_dict["IMO"].append(imo)
+                vsl_mmsi_dict["mmsi_no"].append(mmsi)
+        driver.get('https://www.vesselfinder.com/vessels')
+        time.sleep(1)
 
     driver.close()
     return vsl_mmsi_dict

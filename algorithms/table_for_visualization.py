@@ -27,7 +27,7 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
     departing_vessel_df = tos_plan_berth_atb_df.loc[departing_vessels_idx_list, :]
     departing_vessel_df.reset_index(inplace=True, drop=True)
     arr_dict = {
-        "VSL_CD": [],
+        # "VSL_CD": [],
         "VSL_NM": [],
         "VOYAGE": [],
         "REMAINED_DISTANCE": [],
@@ -42,15 +42,20 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         "STATUS": []
     }
     for idx in on_vessel_df.index:
-        VSL_CD = on_vessel_df.loc[idx, "VSL_CD"]
+        # VSL_CD = on_vessel_df.loc[idx, "VSL_CD"]
         VSL_NM = on_vessel_df.loc[idx, "VSL_NM"]
         VOYAGE = on_vessel_df.loc[idx, "VOYAGE"]
         TOS_ETA = on_vessel_df.loc[idx, "ETA"]
         STATUS = "BERTHED"
-        RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
-        PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
-        BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
-        arr_dict['VSL_CD'].append(VSL_CD)
+        try:
+            RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
+            PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
+            BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
+        except:
+            BERTH = "OT"
+            RTA = pd.to_datetime("2022-01-01 00:00:00")
+            PTA = pd.to_datetime("2022-01-01 00:00:00")
+        # arr_dict['VSL_CD'].append(VSL_CD)
         arr_dict['VSL_NM'].append(VSL_NM)
         arr_dict['VOYAGE'].append(VOYAGE)
         arr_dict['TOS_ETA'].append(TOS_ETA)
@@ -107,7 +112,7 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         else:
             STATUS = "FASTER THAN EXPECTED"
 
-        arr_dict['VSL_CD'].append(VSL_CD)
+        # arr_dict['VSL_CD'].append(VSL_CD)
         arr_dict['VSL_NM'].append(VSL_NM)
         arr_dict['VOYAGE'].append(VOYAGE)
         arr_dict['TOS_ETA'].append(TOS_ETA)
@@ -154,20 +159,25 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         if len(df) == 0:
             continue
 
-        VSL_CD = df["VSL_CD"].values[0]
+        # VSL_CD = df["VSL_CD"].values[0]
         VSL_NM = df["VSL_NM"].values[0]
         VOYAGE = df["VOYAGE"].values[0]
         TOS_ETA = df["TOS_ETA"].values[0]
         STATUS = "ANCHORING"
-        RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
-        PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
-        BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
+        try:
+            RTA = option_b_df.query(f"VOYAGE == '{VOYAGE}'")["RTA"].values[0]
+            PTA = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["PTA"].values[0]
+            BERTH = option_c_df.query(f"VOYAGE == '{VOYAGE}'")["BERTH_C"].values[0]
+        except:
+            BERTH = "OT"
+            RTA = pd.to_datetime("2022-01-01 00:00:00")
+            PTA = pd.to_datetime("2022-01-01 00:00:00")
         FUEL_CONSUMPTION = df['FINAL_ESTIMATED_FUEL_CONSUMPTION'].values[0]
         CO2_EMISSION = df['FINAL_CO2_EMISSION'].values[0]
         MEAN_SPEED = df['MEAN_SPEED'].values[0]
         ETA = df['PREDICTED_ETA'].values[0]
 
-        arr_dict['VSL_CD'].append(VSL_CD)
+        # arr_dict['VSL_CD'].append(VSL_CD)
         arr_dict['VSL_NM'].append(VSL_NM)
         arr_dict['VOYAGE'].append(VOYAGE)
         arr_dict['TOS_ETA'].append(TOS_ETA)
@@ -196,7 +206,7 @@ def departure_monitoring_table(on_vessel_df, url, tos_plan_berth_atd_df):
     new_on_vessel_df.loc[new_on_vessel_df.eval(f'ETD_updated < ETD'), "STATUS"] = "FASTER_THAN_EXPECTED"
     new_on_vessel_df.loc[new_on_vessel_df.eval(f'abs(ETD_updated - ETD) < "{datetime.timedelta(hours=1)}"'), "STATUS"] = "ON_TIME"
     dep_dict = {
-        "VSL_CD": [],
+        # "VSL_CD": [],
         "VSL_NM": [],
         "VOYAGE": [],
         "DWELL_TIME": [],
@@ -207,7 +217,7 @@ def departure_monitoring_table(on_vessel_df, url, tos_plan_berth_atd_df):
     }
     for idx in new_on_vessel_df.index:
 
-        VSL_CD = new_on_vessel_df.loc[idx, "VSL_CD"]
+        # VSL_CD = new_on_vessel_df.loc[idx, "VSL_CD"]
         VSL_NM = new_on_vessel_df.loc[idx, "VSL_NM"]
         VOYAGE = new_on_vessel_df.loc[idx, "VOYAGE"]
         DWELL_TIME = new_on_vessel_df.loc[idx, "work"]
@@ -217,7 +227,7 @@ def departure_monitoring_table(on_vessel_df, url, tos_plan_berth_atd_df):
 
         STATUS = new_on_vessel_df.loc[idx, "STATUS"]
 
-        dep_dict['VSL_CD'].append(VSL_CD)
+        # dep_dict['VSL_CD'].append(VSL_CD)
         dep_dict['VSL_NM'].append(VSL_NM)
         dep_dict['VOYAGE'].append(VOYAGE)
         dep_dict['BERTH'].append(BERTH)
@@ -230,7 +240,7 @@ def departure_monitoring_table(on_vessel_df, url, tos_plan_berth_atd_df):
 
     for idx in tos_plan_berth_atd_df.index:
 
-        VSL_CD = tos_plan_berth_atd_df.loc[idx, "VSL_CD"]
+        # VSL_CD = tos_plan_berth_atd_df.loc[idx, "VSL_CD"]
         VSL_NM = tos_plan_berth_atd_df.loc[idx, "VSL_NM"]
         VOYAGE = tos_plan_berth_atd_df.loc[idx, "VOYAGE"]
         DWELL_TIME = tos_plan_berth_atd_df.loc[idx, "work"]
@@ -240,7 +250,7 @@ def departure_monitoring_table(on_vessel_df, url, tos_plan_berth_atd_df):
 
         STATUS = "AWAY"
 
-        dep_dict['VSL_CD'].append(VSL_CD)
+        # dep_dict['VSL_CD'].append(VSL_CD)
         dep_dict['VSL_NM'].append(VSL_NM)
         dep_dict['BERTH'].append(BERTH)
         dep_dict['VOYAGE'].append(VOYAGE)

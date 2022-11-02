@@ -282,6 +282,7 @@ def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
     big_gap_df = busan_arriving_vessels[
         busan_arriving_vessels["isnottoday"] > timedelta(days=6)]
     busan_arriving_vessels.drop(big_gap_df.index, inplace=True)
+    busan_arriving_vessels.reset_index(inplace=True, drop=True)
     busan_arriving_vessels["remained_distance"] = ''
     for idx, val in enumerate(busan_arriving_vessels.values):
         latitude = busan_arriving_vessels.loc[idx]["latitude"]
