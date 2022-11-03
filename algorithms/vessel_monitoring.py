@@ -118,7 +118,7 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
                     root["vessel_info_list"][i]["voyage_info"]["eta"])
                 vessel_name = root["vessel_info_list"][i]["vessel_name"]
                 data_dict["vessel_name"].append(vessel_name)
-
+                destination = destination.upper()
                 data_dict["destination"].append(destination)
                 try:
                     data_dict["navigation_info"].append(
@@ -377,7 +377,7 @@ def tracking_vessels_monitoring(tracking_vsl_nm_list_df, ais_data_accumulated, p
         if vsl_nm_current_ais not in previous_ais_data_accumulated["TOS_VSL_NM"].values:
             if ('KR' in destination_current_ais) or \
                     ("BUS" in destination_current_ais) or \
-                    ("PUS" in destination_current_ais):
+                    ("PUS" in destination_current_ais) or ("BNP" in destination_current_ais):
                 tracking_vsl_nm_dict['TOS_VSL_NM'].append(vsl_nm_current_ais)
                 tracking_vsl_nm_dict['DESTINATION'].append(destination_current_ais)
                 continue
@@ -390,7 +390,7 @@ def tracking_vessels_monitoring(tracking_vsl_nm_list_df, ais_data_accumulated, p
                 if (vsl_nm_current_ais == vsl_nm_previous_ais) and \
                         (destination_previous_ais != destination_current_ais):
                     if ('KR' in destination_current_ais) or ("BUS" in destination_current_ais) or \
-                            ("PUS" in destination_current_ais):
+                            ("PUS" in destination_current_ais) or ("BNP" in destination_current_ais):
                         tracking_vsl_nm_dict['TOS_VSL_NM'].append(vsl_nm_current_ais)
                         tracking_vsl_nm_dict['DESTINATION'].append(destination_current_ais)
 
@@ -422,7 +422,7 @@ def check_vessels_in_boundary_of_pnit(ais_data_accumulated, sju_db):
         if Point(LONGITUDE, LATITUDE).within(poly):
             vessels_anchoring_at_busan_list.append(TOS_VSL_NM)
         elif NAVIGATION_INFO != 'under way using engine':
-            if ('KR' in destination) or ("BUS" in destination) or ("PUS" in destination):
+            if ('KR' in destination) or ("BUS" in destination) or ("PUS" in destination) or ("BNP" in destination):
                 vessels_anchoring_at_busan_list.append(TOS_VSL_NM)
 
     dict_values = {

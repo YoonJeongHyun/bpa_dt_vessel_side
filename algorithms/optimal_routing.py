@@ -36,7 +36,8 @@ def optimal_routing_prepartion(ais_data_accumulated, tos_vessel, tos_plan_berth_
     df3 = pd.DataFrame(dict__)
     df4 = pd.merge(df3, df1, how='inner')
     op_routing_df = pd.merge(df4, ais_data_accumulated, how='inner')
-    op_routing_df = op_routing_df.query("DESTINATION.str.contains('BUS') | DESTINATION.str.contains('PUS')")
+    op_routing_df = op_routing_df.query(
+        "DESTINATION.str.contains('BUS') | DESTINATION.str.contains('PUS') | DESTINATION.str.contains('BNP')")
     op_routing_df.reset_index(inplace=True, drop=True)
     op_routing_df["OR_ID"] = 'seq_vssl_optimal_routing.NEXTVAL'
     op_routing_df.drop([
