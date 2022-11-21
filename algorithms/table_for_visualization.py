@@ -72,7 +72,8 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
             CO2_EMISSION = vessel_voyage_report['FINAL_CO2_EMISSION'].values[0]
             MEAN_SPEED = vessel_voyage_report['MEAN_SPEED'].values[0]
             ETA = vessel_voyage_report['PREDICTED_ETA'].values[0]
-
+            if pd.isnull(ETA):
+                ETA = pd.to_datetime("2022-01-01 00:00:00")
             arr_dict['ETA'].append(ETA)
             arr_dict['FUEL_CONSUMPTION'].append(FUEL_CONSUMPTION)
             arr_dict['CO2_EMISSION'].append(CO2_EMISSION)
@@ -80,7 +81,8 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
             arr_dict['REMAINED_DISTANCE'].append(0)
 
         except:
-            arr_dict['ETA'].append("")
+            ETA = pd.to_datetime("2022-01-01 00:00:00")
+            arr_dict['ETA'].append(ETA)
             arr_dict['FUEL_CONSUMPTION'].append(0)
             arr_dict['CO2_EMISSION'].append(0)
             arr_dict['MEAN_SPEED'].append(0)
@@ -94,6 +96,8 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         CO2_EMISSION = vssl_optimal_routing_df.loc[idx, "VSSL_CO2"]
         MEAN_SPEED = vssl_optimal_routing_df.loc[idx, "MEAN_SPEED"]
         ETA = vssl_optimal_routing_df.loc[idx, "ETA_ANALYSIS"]
+        if pd.isnull(ETA):
+            ETA = pd.to_datetime("2022-01-01 00:00:00")
         REMAINED_DISTANCE = vssl_optimal_routing_df.loc[idx, "REMAINED_DISTANCE"]
 
         TOS_ETA = vssl_optimal_routing_df.loc[idx, "ETA_PORT_TOS"]
@@ -176,7 +180,8 @@ def arrival_monitoring_table(tos_vessel, tos_plan_berth_atb_df, option_b_df, opt
         CO2_EMISSION = df['FINAL_CO2_EMISSION'].values[0]
         MEAN_SPEED = df['MEAN_SPEED'].values[0]
         ETA = df['PREDICTED_ETA'].values[0]
-
+        if pd.isnull(ETA):
+            ETA = pd.to_datetime("2022-01-01 00:00:00")
         # arr_dict['VSL_CD'].append(VSL_CD)
         arr_dict['VSL_NM'].append(VSL_NM)
         arr_dict['VOYAGE'].append(VOYAGE)

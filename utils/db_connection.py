@@ -27,9 +27,9 @@ def drop_and_create(db, create_sql, drop_sql, sequence_sql=None, primary_sql=Non
         pass
     try:
         cursor.execute(primary_sql)
-        cursor.execute(grant_sql)
     except:
         pass
+    cursor.execute(grant_sql)
 
     db.commit()
 

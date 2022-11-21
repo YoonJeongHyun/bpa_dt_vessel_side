@@ -721,7 +721,7 @@ def main(mode="outside"):
     if mode == "pnit" or mode == "PNIT":
         tsb_db = cx_Oracle.connect("tsb", "tsb00", "192.168.16.21:1521/BPADTDB")
         sju_db = cx_Oracle.connect("sju", "sju05", "192.168.16.21:1521/BPADTDB")
-        pisces_url = "http://192.168.16.51:8080/v1/estimateWorkTime"
+        pisces_url = "http://192.168.16.51/v1/estimateWorkTime"
     else:
         tsb_db = cx_Oracle.connect("tsb", "tsb00", "61.76.45.152:1521/BPADTDB")
         sju_db = cx_Oracle.connect("sju", "sju05", "61.76.45.152:1521/BPADTDB")
