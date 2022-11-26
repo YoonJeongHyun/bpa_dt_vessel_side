@@ -692,7 +692,7 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
     t2_final = t2_new
     t3_final = t3_new
     for q1, row in t1_final.iterrows():
-        if t1_final.dupl[q1] == 0:
+        if t1_final.dupl[q1] == 0 or q1 == 0:
             t1_final.real_FROM_BITT[q1] = 1
             t1_final.real_TO_BITT[q1] = t1_final.real_FROM_BITT[q1] + abs(
                 t1_final.bitt[q1])
@@ -709,7 +709,7 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
         # b1 = b1.reset_index(drop=True)
         # display(b1)
         if b1.empty == True:
-            if t2_final.dupl[w1] == 0:
+            if t2_final.dupl[w1] == 0 or w1 == 0:
                 t2_final.real_FROM_BITT[w1] = 23
                 t2_final.real_TO_BITT[w1] = t2_final.real_FROM_BITT[w1] + abs(
                     t2_final.bitt[w1])
@@ -719,7 +719,7 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
                     t2_final.bitt[w1])
 
         else:
-            if t2_final.dupl[w1] == 0:
+            if t2_final.dupl[w1] == 0 or w1 == 0:
                 t2_final.real_FROM_BITT[w1] = b1.max()['real_TO_BITT'] - 1
                 t2_final.real_TO_BITT[w1] = t2_final.real_FROM_BITT[w1] + abs(
                     t2_final.bitt[w1])
@@ -735,7 +735,7 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
         # b2 = b2.reset_index(drop=True)
 
         if b2.empty == True:
-            if t3_final.dupl[e1] == 0:
+            if t3_final.dupl[e1] == 0 or e1 == 0:
                 t3_final.real_TO_BITT[e1] = 63
                 t3_final.real_FROM_BITT[e1] = t3_final.real_TO_BITT[e1] - abs(
                     t3_final.bitt[e1])
@@ -745,7 +745,7 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
                     t3_final.bitt[e1])
 
         else:
-            if t3_final.dupl[e1] == 0:
+            if t3_final.dupl[e1] == 0 or e1 == 0:
                 t3_final.real_FROM_BITT[e1] = b2.max()['real_TO_BITT'] - 1
                 t3_final.real_TO_BITT[e1] = t3_final.real_FROM_BITT[e1] + abs(
                     t3_final.bitt[e1])
