@@ -375,6 +375,10 @@ def option_C_table(url, tos_plan_berth_df, tos_vessel, ais_data_accumulated):
                 idx_list.append(idx)
             elif "PUS" in DESTINATION:
                 idx_list.append(idx)
+            elif "KR" in DESTINATION:
+                idx_list.append(idx)
+            elif "BNP" in DESTINATION:
+                idx_list.append(idx)
 
         except:
             pass

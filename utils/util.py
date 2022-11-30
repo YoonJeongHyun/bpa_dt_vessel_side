@@ -11,6 +11,7 @@ from datetime import timedelta
 
 
 def fuel_estimation(teu, T, S):
+    T = T / 24
     if teu <= 1500:
         first_co_eff = 0.0072
         sec_co_eff = 10.8592
