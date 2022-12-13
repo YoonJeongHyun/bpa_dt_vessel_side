@@ -422,8 +422,9 @@ def check_vessels_in_boundary_of_pnit(ais_data_accumulated, sju_db):
         if Point(LONGITUDE, LATITUDE).within(poly):
             vessels_anchoring_at_busan_list.append(TOS_VSL_NM)
         elif NAVIGATION_INFO != 'under way using engine':
-            if ('KR' in destination) or ("BUS" in destination) or ("PUS" in destination) or ("BNP" in destination):
-                vessels_anchoring_at_busan_list.append(TOS_VSL_NM)
+            if destination is not None:
+                if ('KR' in destination) or ("BUS" in destination) or ("PUS" in destination) or ("BNP" in destination):
+                    vessels_anchoring_at_busan_list.append(TOS_VSL_NM)
 
     dict_values = {
         'VSL_NM': [],
