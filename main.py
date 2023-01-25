@@ -832,48 +832,48 @@ def main(mode="outside"):
         cursor.execute(tracking_vsl_nm_list_sql_delete)
         sju_db.commit()
 
-    # 남은 선박 모니터링
-    vessel_500_df = pd.read_csv("vessel_list_3.csv")
-    # idx_rdm_400 = random.sample(list(vessel_500_df.index), 400)
-    idx_rdm_400 = [
-        173, 267, 147, 212, 346, 256, 174, 236, 217, 244, 301, 261, 145, 336, 79,
-        420, 101, 111, 352, 391, 338, 406, 139, 218, 73, 126, 121, 477, 308, 353,
-        38, 5, 377, 260, 48, 172, 168, 268, 347, 439, 144, 209, 355, 80, 367, 354,
-        46, 421, 344, 361, 416, 375, 148, 396, 65, 43, 458, 425, 170, 71, 446, 74,
-        85, 248, 6, 56, 493, 299, 334, 395, 463, 67, 176, 146, 40, 210, 358, 488,
-        239, 161, 320, 279, 440, 92, 298, 296, 119, 470, 394, 339, 277, 221, 434,
-        91, 290, 429, 227, 300, 503, 57, 12, 27, 107, 175, 326, 284, 486, 130, 419,
-        474, 34, 115, 489, 102, 399, 224, 186, 132, 374, 472, 351, 166, 131, 204,
-        392, 494, 368, 82, 484, 319, 203, 10, 370, 78, 140, 156, 497, 72, 356, 199,
-        435, 293, 325, 98, 371, 87, 438, 253, 70, 155, 310, 7, 94, 116, 291, 272,
-        288, 24, 29, 485, 51, 481, 357, 60, 201, 289, 498, 249, 15, 84, 449, 13,
-        403, 189, 245, 330, 479, 124, 192, 402, 405, 200, 182, 195, 398, 133, 464,
-        237, 331, 169, 444, 262, 3, 468, 234, 328, 167, 491, 81, 163, 304, 473,
-        411, 247, 54, 322, 99, 492, 259, 187, 32, 49, 450, 362, 243, 41, 363, 274,
-        321, 14, 342, 106, 225, 21, 164, 427, 379, 185, 53, 76, 77, 448, 219, 235,
-        20, 280, 333, 44, 180, 309, 16, 315, 442, 109, 433, 418, 469, 424, 378, 45,
-        150, 93, 343, 202, 417, 95, 281, 97, 258, 105, 263, 376, 90, 137, 64, 25,
-        487, 276, 283, 265, 18, 359, 461, 360, 273, 385, 372, 350, 55, 129, 190,
-        162, 407, 381, 151, 136, 311, 306, 4, 135, 428, 495, 165, 455, 345, 242,
-        63, 451, 108, 39
-    ]
-    vessel_500_df.loc[idx_rdm_400, :].sort_index().reset_index(inplace=True, drop=True)
-    vessel_500_df = vessel_500_df.loc[idx_rdm_400, :].sort_index().reset_index(drop=True)
-    vessel_500_MMSI_list = vessel_500_df["MMSI_NO"].values
-    data_dict = ais_monitoring(vessel_500_MMSI_list, mode="ais_500")
-    vessel_500_orbcomn_df = make_vessel_500_orbcomn_df(data_dict)
-    vessel_500_orbcomn_df = vessel_500_orbcomn_df[ais_data_accumulated_500_columns]
-    vessel_500_orbcomn_df.reset_index(drop=True, inplace=True)
-
-    db_write(sju_db,
-             ais_data_accumulated_500_sql_drop,
-             ais_data_accumulated_500_sql_create,
-             ais_data_accumulated_500_sql_sequence,
-             ais_data_accumulated_500_sql_primary,
-             ais_data_accumulated_500_sql_grant,
-             ais_data_accumulated_500_columns,
-             vessel_500_orbcomn_df,
-             'ais_data_accumulated_500')
+    # # 남은 선박 모니터링
+    # vessel_500_df = pd.read_csv("vessel_list_3.csv")
+    # # idx_rdm_400 = random.sample(list(vessel_500_df.index), 400)
+    # idx_rdm_400 = [
+    #     173, 267, 147, 212, 346, 256, 174, 236, 217, 244, 301, 261, 145, 336, 79,
+    #     420, 101, 111, 352, 391, 338, 406, 139, 218, 73, 126, 121, 477, 308, 353,
+    #     38, 5, 377, 260, 48, 172, 168, 268, 347, 439, 144, 209, 355, 80, 367, 354,
+    #     46, 421, 344, 361, 416, 375, 148, 396, 65, 43, 458, 425, 170, 71, 446, 74,
+    #     85, 248, 6, 56, 493, 299, 334, 395, 463, 67, 176, 146, 40, 210, 358, 488,
+    #     239, 161, 320, 279, 440, 92, 298, 296, 119, 470, 394, 339, 277, 221, 434,
+    #     91, 290, 429, 227, 300, 503, 57, 12, 27, 107, 175, 326, 284, 486, 130, 419,
+    #     474, 34, 115, 489, 102, 399, 224, 186, 132, 374, 472, 351, 166, 131, 204,
+    #     392, 494, 368, 82, 484, 319, 203, 10, 370, 78, 140, 156, 497, 72, 356, 199,
+    #     435, 293, 325, 98, 371, 87, 438, 253, 70, 155, 310, 7, 94, 116, 291, 272,
+    #     288, 24, 29, 485, 51, 481, 357, 60, 201, 289, 498, 249, 15, 84, 449, 13,
+    #     403, 189, 245, 330, 479, 124, 192, 402, 405, 200, 182, 195, 398, 133, 464,
+    #     237, 331, 169, 444, 262, 3, 468, 234, 328, 167, 491, 81, 163, 304, 473,
+    #     411, 247, 54, 322, 99, 492, 259, 187, 32, 49, 450, 362, 243, 41, 363, 274,
+    #     321, 14, 342, 106, 225, 21, 164, 427, 379, 185, 53, 76, 77, 448, 219, 235,
+    #     20, 280, 333, 44, 180, 309, 16, 315, 442, 109, 433, 418, 469, 424, 378, 45,
+    #     150, 93, 343, 202, 417, 95, 281, 97, 258, 105, 263, 376, 90, 137, 64, 25,
+    #     487, 276, 283, 265, 18, 359, 461, 360, 273, 385, 372, 350, 55, 129, 190,
+    #     162, 407, 381, 151, 136, 311, 306, 4, 135, 428, 495, 165, 455, 345, 242,
+    #     63, 451, 108, 39
+    # ]
+    # vessel_500_df.loc[idx_rdm_400, :].sort_index().reset_index(inplace=True, drop=True)
+    # vessel_500_df = vessel_500_df.loc[idx_rdm_400, :].sort_index().reset_index(drop=True)
+    # vessel_500_MMSI_list = vessel_500_df["MMSI_NO"].values
+    # data_dict = ais_monitoring(vessel_500_MMSI_list, mode="ais_500")
+    # vessel_500_orbcomn_df = make_vessel_500_orbcomn_df(data_dict)
+    # vessel_500_orbcomn_df = vessel_500_orbcomn_df[ais_data_accumulated_500_columns]
+    # vessel_500_orbcomn_df.reset_index(drop=True, inplace=True)
+    #
+    # db_write(sju_db,
+    #          ais_data_accumulated_500_sql_drop,
+    #          ais_data_accumulated_500_sql_create,
+    #          ais_data_accumulated_500_sql_sequence,
+    #          ais_data_accumulated_500_sql_primary,
+    #          ais_data_accumulated_500_sql_grant,
+    #          ais_data_accumulated_500_columns,
+    #          vessel_500_orbcomn_df,
+    #          'ais_data_accumulated_500')
 
     tug_static_area = pd.read_sql(tug_static_area_sql_select, sju_db)
     tug_static_area_df = tug_static_area[tug_static_area["TYPE"] == 'arrival_route']

@@ -20,25 +20,23 @@ def search_for_vessels(tos_plan_berth_df, tos_vessel):
     vsl_name_dict = dict.fromkeys(tos_plan_berth_df["VSL_NM"].values)
     vsl_name_list = list(vsl_name_dict)
     mmsi_vessel_df = pd.read_csv("mmsi_vessel_list.csv")
-    unfounded_vessel_list = []
+    unfound_vessel_list = []
     for name in vsl_name_list:
         if name not in mmsi_vessel_df["VSL_NM"].values:
-            unfounded_vessel_list.append(name)
-    mode = 0
-    if len(unfounded_vessel_list) != 0:
-        vsl_mmsi_dict_new = crawling_mmsi(unfounded_vessel_list)
-        capa_dict_new = capacity_crawling(tos_vessel, unfounded_vessel_list)
-        df1 = pd.DataFrame(vsl_mmsi_dict_new)
-        df2 = pd.DataFrame(capa_dict_new)
-        dfnew = pd.merge(df1, df2).drop_duplicates()
-        mode = 1
+            #         if name != 'MSC YUVIKA':
+            if name == np.nan:
+                unfound_vessel_list.append(name)
+            unfound_vessel_list.append(name)
 
-    if mode == 1:
-        mmsi_vessel_df = mmsi_vessel_df.append(dfnew, ignore_index=True)
-        mmsi_vessel_df.to_csv('mmsi_vessel_list.csv',
-                              header=True,
-                              index=False,
-                              encoding="utf-8 sig")
+    if len(unfound_vessel_list) != 0:
+        vsl_mmsi_dict_new = crawling_mmsi_new(unfound_vessel_list)
+        dfnew = pd.DataFrame(vsl_mmsi_dict_new)
+        dfnew.to_csv('mmsi_vessel_list.csv',
+                     header=False,
+                     index=False,
+                     encoding="utf-8 sig", mode="a")
+    mmsi_vessel_df = pd.read_csv('mmsi_vessel_list.csv')
+    mmsi_vessel_df.dropna(inplace=True)
 
     observing_mmsi_list = []
     no_mmsi_list = []
@@ -63,7 +61,8 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
     # POST
     if mode == "ais":
         # fleet_id = orbcomn_fleet_create()
-        fleet_id = "sewonkim8390"
+        # fleet_id = "sewonkim8390"
+        fleet_id = "sewonkim8393"
         omit_mmsi_list = orbcomn_fleet_post_vessels(observing_mmsi_list, fleet_id)
         total_page = orbcomn_fleet_max_page(fleet_id)
 
@@ -101,17 +100,21 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
                     continue
                 if mmsi in omit_mmsi_list:
                     continue
-                destination = root["vessel_info_list"][i]["voyage_info"]["destination"]
-                destination = destination.replace(">>", ">")
-                destination = destination.replace("->", ">")
-                destination = destination.replace("'", "")
-                destination = destination.replace('"', '')
-                destination = destination.replace('', '')
-                if "-" in destination:
-                    destination = destination.split('-')[1].strip(" ")
 
-                elif ">" in destination:
-                    destination = destination.split('>')[1].strip(" ")
+                destination = root["vessel_info_list"][i]["voyage_info"]["destination"]
+                if destination is not None:
+                    destination = destination.replace(">>", ">")
+                    destination = destination.replace("->", ">")
+                    destination = destination.replace("'", "")
+                    destination = destination.replace('"', '')
+                    destination = destination.replace('', '')
+                    if "-" in destination:
+                        destination = destination.split('-')[1].strip(" ")
+
+                    elif ">" in destination:
+                        destination = destination.split('>')[1].strip(" ")
+                else:
+                    destination = "None"
                 data_dict["mmsi"].append(mmsi)
                 data_dict["imo"].append(root["vessel_info_list"][i]["imo"])
                 data_dict["eta"].append(
@@ -155,6 +158,10 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
 
                         tos_ETA = tos_df["ETA"].values[0]
                         tos_ETD = tos_df["ETD"].values[0]
+                        if pd.isnull(tos_ETA):
+                            tos_ETA = datetime.datetime(year=1970, month=1, day=1)
+                        if pd.isnull(tos_ETD):
+                            tos_ETD = datetime.datetime(year=1970, month=1, day=1)
                         VOYAGE = tos_df["VOYAGE"].values[0]
                         DIS_QTY = tos_df["DIS_QTY"].values[0]
                         LOAD_QTY = tos_df["LOAD_QTY"].values[0]
@@ -172,6 +179,10 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
 
                         tos_ETA = tos_df["ETA"].values[0]
                         tos_ETD = tos_df["ETD"].values[0]
+                        if pd.isnull(tos_ETA):
+                            tos_ETA = datetime.datetime(year=1970, month=1, day=1)
+                        if pd.isnull(tos_ETD):
+                            tos_ETD = datetime.datetime(year=1970, month=1, day=1)
                         VOYAGE = tos_df["VOYAGE"].values[0]
                         DIS_QTY = tos_df["DIS_QTY"].values[0]
                         LOAD_QTY = tos_df["LOAD_QTY"].values[0]
@@ -192,76 +203,77 @@ def ais_monitoring(observing_mmsi_list, mode="ais", mmsi_vessel_df=None, tos_pla
                 data_dict["DIS_QTY"].append(DIS_QTY)
                 data_dict["LOAD_QTY"].append(LOAD_QTY)
 
-    elif mode == 'ais_500':
-        # fleet_id = orbcomn_fleet_create()
-        fleet_id = 'sewonkim8391'
-        print("=" * 100)
-        print("400 vessels monitored")
-        # orbcomn_fleet_post_vessels(observing_mmsi_list, fleet_id)
-        total_page = orbcomn_fleet_max_page(fleet_id)
-
-        data_dict = {
-            "vessel_name": [],
-            "excel_vessel_name": [],
-            "mmsi": [],
-            "imo": [],
-            "eta": [],
-            "destination": [],
-            "navigation_info": [],
-            "longitude": [],
-            "latitude": [],
-            "heading": [],
-            "speed": [],
-            "max_draught": [],
-            "time_position_data_received": [],
-            "time_voyage_data_received": []
-        }
-        for page in range(total_page):
-            time.sleep(1)
-            test_api_url = f"https://api.commtrace.com/ais/v1.1/fleet/{fleet_id}?username={username}&password={password}&page={page + 1}"
-            api_call_response = requests.get(test_api_url, verify=False)
-            root = json.loads(api_call_response.text)
-            for i in range(len(root["vessel_info_list"])):
-                mmsi = root["vessel_info_list"][i]["mmsi"]
-                data_dict["mmsi"].append(mmsi)
-                data_dict["imo"].append(root["vessel_info_list"][i]["imo"])
-                data_dict["eta"].append(
-                    root["vessel_info_list"][i]["voyage_info"]["eta"])
-                data_dict["vessel_name"].append(
-                    root["vessel_info_list"][i]["vessel_name"])
-                data_dict["destination"].append(
-                    root["vessel_info_list"][i]["voyage_info"]["destination"])
-                try:
-                    data_dict["navigation_info"].append(
-                        root["vessel_info_list"][i]["voyage_info"]["navigation_info"]
-                        ['description'])
-                except:
-                    data_dict["navigation_info"].append(None)
-                data_dict["longitude"].append(
-                    root["vessel_info_list"][i]["position_info"]["lon"])
-                data_dict["latitude"].append(
-                    root["vessel_info_list"][i]["position_info"]["lat"])
-                data_dict["heading"].append(
-                    root["vessel_info_list"][i]["position_info"]["true_heading"])
-                data_dict["speed"].append(
-                    root["vessel_info_list"][i]["position_info"]["speed"])
-                data_dict["time_position_data_received"].append(
-                    root["vessel_info_list"][i]["position_info"]["received"])
-                data_dict["time_voyage_data_received"].append(
-                    root["vessel_info_list"][i]["voyage_info"]["received"])
-                max_draught = root["vessel_info_list"][i]["voyage_info"]["max_draught"]
-                data_dict["max_draught"].append(max_draught)
-                try:
-                    excel_vessel_name = mmsi_vessel_df.query(f'MMSI_NO == {mmsi}')['VSSL_ENG_NM'].values[0]
-                    data_dict['excel_vessel_name'].append(excel_vessel_name)
-                except:
-                    data_dict['excel_vessel_name'].append("")
+    # elif mode == 'ais_500':
+    #     # fleet_id = orbcomn_fleet_create()
+    #     fleet_id = 'sewonkim8391'
+    #     print("=" * 100)
+    #     print("400 vessels monitored")
+    #     # orbcomn_fleet_post_vessels(observing_mmsi_list, fleet_id)
+    #     total_page = orbcomn_fleet_max_page(fleet_id)
+    #
+    #     data_dict = {
+    #         "vessel_name": [],
+    #         "excel_vessel_name": [],
+    #         "mmsi": [],
+    #         "imo": [],
+    #         "eta": [],
+    #         "destination": [],
+    #         "navigation_info": [],
+    #         "longitude": [],
+    #         "latitude": [],
+    #         "heading": [],
+    #         "speed": [],
+    #         "max_draught": [],
+    #         "time_position_data_received": [],
+    #         "time_voyage_data_received": []
+    #     }
+    #     for page in range(total_page):
+    #         time.sleep(1)
+    #         test_api_url = f"https://api.commtrace.com/ais/v1.1/fleet/{fleet_id}?username={username}&password={password}&page={page + 1}"
+    #         api_call_response = requests.get(test_api_url, verify=False)
+    #         root = json.loads(api_call_response.text)
+    #         for i in range(len(root["vessel_info_list"])):
+    #             mmsi = root["vessel_info_list"][i]["mmsi"]
+    #             data_dict["mmsi"].append(mmsi)
+    #             data_dict["imo"].append(root["vessel_info_list"][i]["imo"])
+    #             data_dict["eta"].append(
+    #                 root["vessel_info_list"][i]["voyage_info"]["eta"])
+    #             data_dict["vessel_name"].append(
+    #                 root["vessel_info_list"][i]["vessel_name"])
+    #             data_dict["destination"].append(
+    #                 root["vessel_info_list"][i]["voyage_info"]["destination"])
+    #             try:
+    #                 data_dict["navigation_info"].append(
+    #                     root["vessel_info_list"][i]["voyage_info"]["navigation_info"]
+    #                     ['description'])
+    #             except:
+    #                 data_dict["navigation_info"].append(None)
+    #             data_dict["longitude"].append(
+    #                 root["vessel_info_list"][i]["position_info"]["lon"])
+    #             data_dict["latitude"].append(
+    #                 root["vessel_info_list"][i]["position_info"]["lat"])
+    #             data_dict["heading"].append(
+    #                 root["vessel_info_list"][i]["position_info"]["true_heading"])
+    #             data_dict["speed"].append(
+    #                 root["vessel_info_list"][i]["position_info"]["speed"])
+    #             data_dict["time_position_data_received"].append(
+    #                 root["vessel_info_list"][i]["position_info"]["received"])
+    #             data_dict["time_voyage_data_received"].append(
+    #                 root["vessel_info_list"][i]["voyage_info"]["received"])
+    #             max_draught = root["vessel_info_list"][i]["voyage_info"]["max_draught"]
+    #             data_dict["max_draught"].append(max_draught)
+    #             try:
+    #                 excel_vessel_name = mmsi_vessel_df.query(f'MMSI_NO == {mmsi}')['VSSL_ENG_NM'].values[0]
+    #                 data_dict['excel_vessel_name'].append(excel_vessel_name)
+    #             except:
+    #                 data_dict['excel_vessel_name'].append("")
 
     return data_dict
 
 
 def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
     pnit_vessel_df = pd.DataFrame(data_dict)
+    pnit_vessel_df.reset_index(inplace=True, drop=True)
     today = datetime.datetime.now()
     one_day = timedelta(days=1)
     # busan_arriving_vessels = pd.DataFrame(data_dict)
@@ -279,11 +291,15 @@ def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
     busan_arriving_vessels["isnottoday"] = today - busan_arriving_vessels[
         "time_position_data_received"]
     busan_arriving_vessels["timestamp"] = today
-    big_gap_df = busan_arriving_vessels[
-        busan_arriving_vessels["isnottoday"] > timedelta(days=6)]
-    busan_arriving_vessels.drop(big_gap_df.index, inplace=True)
+    # big_gap_df = busan_arriving_vessels[
+    #     busan_arriving_vessels["isnottoday"] > timedelta(days=6)]
+    # busan_arriving_vessels.drop(big_gap_df.index, inplace=True)
+
     busan_arriving_vessels.reset_index(inplace=True, drop=True)
     busan_arriving_vessels["remained_distance"] = ''
+    busan_arriving_vessels["predicted_ETA"] = ''
+    busan_arriving_vessels["estimated_fuel_consumption"] = 0
+
     for idx, val in enumerate(busan_arriving_vessels.values):
         latitude = busan_arriving_vessels.loc[idx]["latitude"]
         longitude = busan_arriving_vessels.loc[idx]["longitude"]
@@ -292,7 +308,6 @@ def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
         remain_distance_km = haversine(current_coord, PNIT_anchorage, unit="km")
         busan_arriving_vessels.loc[idx, 'remained_distance'] = remain_distance_km
 
-    busan_arriving_vessels["estimated_fuel_consumption"] = 0
     # inaccurate_time_df["estimated_fuel_consumption"] = 0
 
     for idx, teu in enumerate(busan_arriving_vessels["CAPACITY"].values):
@@ -309,7 +324,6 @@ def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
             busan_arriving_vessels.loc[
                 idx, "estimated_fuel_consumption"] = 0
 
-    busan_arriving_vessels["predicted_ETA"] = ''
     cal_idx = busan_arriving_vessels.query(
         'navigation_info == "under way using engine"').index
     remained_distance = busan_arriving_vessels.loc[cal_idx, 'remained_distance']
@@ -363,37 +377,43 @@ def make_busan_arriving_vessels_df(data_dict, PNIT_anchorage):
 def tracking_vessels_monitoring(tracking_vsl_nm_list_df, ais_data_accumulated, previous_ais_data_accumulated):
     duplicated_check_list = tracking_vsl_nm_list_df["TOS_VSL_NM"].values
 
-    tracking_vsl_nm_dict = {
-        "TOS_VSL_NM": [],
-        "DESTINATION": []
-    }
+    tracking_vsl_nm_dict = {"TOS_VSL_NM": [], "DESTINATION": []}
 
     for idx in ais_data_accumulated.index:
         vsl_nm_current_ais = ais_data_accumulated.loc[idx, "TOS_VSL_NM"]
         destination_current_ais = ais_data_accumulated.loc[idx, "DESTINATION"]
-        if destination_current_ais is None:
+        if destination_current_ais == None:
             continue
         # 과거 데이터 중 없었던 선박이었는데 부산항을 향해 오는 선박 체크
-        if vsl_nm_current_ais not in previous_ais_data_accumulated["TOS_VSL_NM"].values:
-            if ('KR' in destination_current_ais) or \
-                    ("BUS" in destination_current_ais) or \
-                    ("PUS" in destination_current_ais) or ("BNP" in destination_current_ais):
+        if vsl_nm_current_ais not in previous_ais_data_accumulated[
+            "TOS_VSL_NM"].values:
+            if ('KR' in destination_current_ais) or (
+                    "BUS" in destination_current_ais) or (
+                    "PUS" in destination_current_ais) or (
+                    "BNP" in destination_current_ais):
                 tracking_vsl_nm_dict['TOS_VSL_NM'].append(vsl_nm_current_ais)
                 tracking_vsl_nm_dict['DESTINATION'].append(destination_current_ais)
                 continue
 
         for idx2 in previous_ais_data_accumulated.index:
-            vsl_nm_previous_ais = previous_ais_data_accumulated.loc[idx2, "TOS_VSL_NM"]
-            destination_previous_ais = previous_ais_data_accumulated.loc[idx2, "DESTINATION"]
+            vsl_nm_previous_ais = previous_ais_data_accumulated.loc[idx2,
+                                                                    "TOS_VSL_NM"]
+            destination_previous_ais = previous_ais_data_accumulated.loc[
+                idx2, "DESTINATION"]
             # 전 선박과 이번 선박의 목적지가 다른 경우
-            if vsl_nm_current_ais not in duplicated_check_list:
-                if (vsl_nm_current_ais == vsl_nm_previous_ais) and \
-                        (destination_previous_ais != destination_current_ais):
-                    if ('KR' in destination_current_ais) or ("BUS" in destination_current_ais) or \
-                            ("PUS" in destination_current_ais) or ("BNP" in destination_current_ais):
-                        tracking_vsl_nm_dict['TOS_VSL_NM'].append(vsl_nm_current_ais)
-                        tracking_vsl_nm_dict['DESTINATION'].append(destination_current_ais)
+            if not vsl_nm_current_ais in duplicated_check_list:
 
+                if (vsl_nm_current_ais == vsl_nm_previous_ais) and (
+                        destination_previous_ais != destination_current_ais):
+                    # 현재 목적지가 부산일 때 tracking 시작
+
+                    if ("BUS" in destination_current_ais) or (
+                            "PUS" in destination_current_ais) or (
+                            "BNP" in destination_current_ais):
+                        tracking_vsl_nm_dict['TOS_VSL_NM'].append(
+                            vsl_nm_current_ais)
+                        tracking_vsl_nm_dict['DESTINATION'].append(
+                            destination_current_ais)
     tracking_vsl_df = pd.DataFrame(tracking_vsl_nm_dict)
     return tracking_vsl_df
 

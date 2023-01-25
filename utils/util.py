@@ -10,12 +10,14 @@ import pandas as pd
 from datetime import timedelta
 
 
+# 선형적인 방법
 def fuel_estimation(teu, T, S):
     T = T / 24
     if teu <= 1500:
         first_co_eff = 0.0072
         sec_co_eff = 10.8592
-        estimated_fuel_consumption = (first_co_eff * T * math.pow(S, 3)) + (sec_co_eff * T)
+        estimated_fuel_consumption = (0.0072 * T * math.pow(S, 3)) + (10.8592 *
+                                                                      T)
 
     elif teu <= 3000:
         first_co_eff = (teu - 1500) * 0.00000096 + 0.0072
@@ -73,129 +75,55 @@ def fuel_estimation(teu, T, S):
 
     return estimated_fuel_consumption
 
-
 def upper(x):
     return str(x).upper()
 
 
-def crawling_mmsi(vsl_name_list):
-    # 웹 드라이버 실행
-    vsl_mmsi_dict = {"VSL_NM": [], "mmsi_no": [], "IMO": []}
-    if len(vsl_name_list) == 0:
-        return vsl_mmsi_dict
+def crawling_mmsi_new(vsl_name_list):
+    from selenium.webdriver.common.keys import Keys
+
+    vsl_name_list = unfound_vessel_list
+    vsl_mmsi_dict = {"VSL_NM": [], "mmsi_no": [], "IMO": [], "CAPACITY": []}
 
     driver = webdriver.Chrome("chromedriver")
-    driver.get('https://www.vesselfinder.com/vessels')
 
     for vsl_name in vsl_name_list:
-        input_tag = driver.find_element(By.CSS_SELECTOR, '#advsearch-name')
-
+        driver.get('https://www.google.com/')
+        time.sleep(1)
+        input_tag = driver.find_element(By.CSS_SELECTOR,
+                                        'body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input')
         input_tag.clear()
         input_tag.send_keys(vsl_name)
         time.sleep(1)
-
-        submit_btn = driver.find_element(
-            By.CSS_SELECTOR,
-            'body > div > div > main > div > form > div > button')
-        submit_btn.click()
-        try:
-            if len(driver.find_elements(By.CSS_SELECTOR,
-                                        'body > div > div > main > div > section > table > tbody > tr')) == 1:
-                ship_link = driver.find_element(
-                    By.CSS_SELECTOR,
-                    'body > div > div > main > div > section > table > tbody > tr > td > a'
-                )
-                ship_link = ship_link.get_attribute('href')
-                driver.get(ship_link)
-                time.sleep(1)
-
-                detail = driver.find_element(
-                    By.CSS_SELECTOR,
-                    'body > div.body-wrapper > div > main > div > div.column.ship-section > p.text1')
-                imo = detail.text.split("IMO: ")[1].split(",")[0]
-                mmsi = detail.text.split("MMSI ")[1].split(")")[0]
-
-                vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-                vsl_mmsi_dict["IMO"].append(imo)
-                vsl_mmsi_dict["mmsi_no"].append(mmsi)
-            else:
-                ship_link = driver.find_element(
-                    By.CSS_SELECTOR,
-                    'body > div > div > main > div > section > table > tbody > tr > td > a'
-                )
-                ship_link = ship_link.get_attribute('href')
-                driver.get(ship_link)
-                time.sleep(1)
-
-                detail = driver.find_element(
-                    By.CSS_SELECTOR,
-                    'body > div.body-wrapper > div > main > div > div.column.ship-section > p.text1')
-                if not detail.text.split("is")[1].split("built")[0].strip() == "a Container Ship":
-                    continue
-                else:
-                    imo = detail.text.split("IMO: ")[1].split(",")[0]
-                    mmsi = detail.text.split("MMSI ")[1].split(")")[0]
-
-                    vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-                    vsl_mmsi_dict["IMO"].append(imo)
-                    vsl_mmsi_dict["mmsi_no"].append(mmsi)
-        except:
-            vsl_mmsi_dict["VSL_NM"].append(vsl_name)
-            vsl_mmsi_dict["IMO"].append(0)
-            vsl_mmsi_dict["mmsi_no"].append(0)
-
-        driver.get('https://www.vesselfinder.com/vessels')
+        input_tag.send_keys(Keys.ENTER)
         time.sleep(1)
+
+        search_list = driver.find_elements(By.CSS_SELECTOR, '#rso > div')
+        for i in search_list:
+            try:
+                link = i.find_element(By.CSS_SELECTOR, 'div > div > div > div > a').get_attribute('href')
+                if 'marinetraffic.com' in link:
+                    txt = i.text.split('\n')
+
+                    capacity = txt[2].split('is')[-1].strip().split(' ')[0]
+                    MMSI = link.split('mmsi:')[1].split('/')[0]
+                    IMO = link.split('imo:')[1].split('/')[0]
+
+                    capacity = int(capacity)
+                    MMSI = int(MMSI)
+                    IMO = int(IMO)
+
+                    vsl_mmsi_dict['VSL_NM'].append(vsl_name)
+                    vsl_mmsi_dict['mmsi_no'].append(MMSI)
+                    vsl_mmsi_dict['IMO'].append(IMO)
+                    vsl_mmsi_dict['CAPACITY'].append(capacity)
+
+                    break
+            except:
+                pass
 
     driver.close()
     return vsl_mmsi_dict
-
-
-def capacity_crawling(tos_vessel, no_capa_vessel):
-    no_capa_dict = {"VSL_NM": [], "CAPACITY": []}
-    if len(no_capa_vessel) == 0:
-        return no_capa_dict
-
-    new_capa_vessel = []
-
-    for vsl in no_capa_vessel:
-        try:
-            teu = tos_vessel.query(f"VSL_NM == '{vsl}'")["CAPACITY"].values[0]
-            teu = int(teu)
-            if teu != 0:
-                no_capa_dict['VSL_NM'].append(vsl)
-                no_capa_dict["CAPACITY"].append(teu)
-            else:
-                new_capa_vessel.append(vsl)
-        except:
-            new_capa_vessel.append(vsl)
-
-    driver = webdriver.Chrome("chromedriver")
-
-    for vsl in new_capa_vessel:
-        query_str = ''
-        name = vsl.split(" ")
-        for idx, element in enumerate(name):
-            query_str += element
-            if idx != len(name) - 1:
-                query_str += "+"
-
-        driver.get(f'https://www.vesseltracking.net/ships?search={query_str}')
-        time.sleep(1)
-        teu = None
-        try:
-            teu = driver.find_element(
-                By.CSS_SELECTOR, '#w0 > table > tbody > tr > td:nth-child(5)')
-            teu = teu.text
-            teu = int(teu)
-            no_capa_dict["VSL_NM"].append(vsl)
-            no_capa_dict["CAPACITY"].append(teu)
-        except:
-            no_capa_dict["VSL_NM"].append(vsl)
-            no_capa_dict["CAPACITY"].append(0)
-
-    driver.close()
-    return no_capa_dict
 
 
 # def orbcomn_fleet_delete(username='sewonkim', password='sejong@)@!12'):
@@ -264,7 +192,6 @@ def orbcomn_fleet_post_vessels(observing_mmsi_list, fleet_id, username='sewonkim
                 api_call_response = requests.post(test_api_url, verify=False)
                 print("The number of vessels : ", cnt)
                 print("AIS DATA updated")
-
     return omit_mmsi_list
 
 
