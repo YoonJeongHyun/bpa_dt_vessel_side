@@ -79,21 +79,21 @@ def upper(x):
     return str(x).upper()
 
 
-def crawling_mmsi_new(vsl_name_list):
+def crawling_mmsi_new(unfound_vessel_list):
     from selenium.webdriver.common.keys import Keys
 
     vsl_name_list = unfound_vessel_list
-    vsl_mmsi_dict = {"VSL_NM": [], "mmsi_no": [], "IMO": [], "CAPACITY": []}
+    vsl_mmsi_dict = {"VSL_NM": [], "mmsi_no": [], "IMO": [], "CAPACITY" : []}
 
     driver = webdriver.Chrome("chromedriver")
+
 
     for vsl_name in vsl_name_list:
         driver.get('https://www.google.com/')
         time.sleep(1)
-        input_tag = driver.find_element(By.CSS_SELECTOR,
-                                        'body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input')
+        input_tag = driver.find_element(By.CSS_SELECTOR, 'body > div.L3eUgb > div.o3j99.ikrT4e.om7nvf > form > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input')
         input_tag.clear()
-        input_tag.send_keys(vsl_name)
+        input_tag.send_keys(vsl_name +" marine traffic")
         time.sleep(1)
         input_tag.send_keys(Keys.ENTER)
         time.sleep(1)
@@ -104,27 +104,28 @@ def crawling_mmsi_new(vsl_name_list):
                 link = i.find_element(By.CSS_SELECTOR, 'div > div > div > div > a').get_attribute('href')
                 if 'marinetraffic.com' in link:
                     txt = i.text.split('\n')
-
-                    capacity = txt[2].split('is')[-1].strip().split(' ')[0]
-                    MMSI = link.split('mmsi:')[1].split('/')[0]
-                    IMO = link.split('imo:')[1].split('/')[0]
-
-                    capacity = int(capacity)
-                    MMSI = int(MMSI)
-                    IMO = int(IMO)
+                    for i in txt:
+                        if "TEU" in i:
+                            capacity = int(i.split("is")[-1].strip().split(' ')[0])
+                        elif "MMSI" in i:
+                            MMSI = int(i.split("MMSI: ")[-1])
+                        elif "IMO" in i:
+                            IMO = int(i.split("IMO: ")[-1])
 
                     vsl_mmsi_dict['VSL_NM'].append(vsl_name)
                     vsl_mmsi_dict['mmsi_no'].append(MMSI)
                     vsl_mmsi_dict['IMO'].append(IMO)
                     vsl_mmsi_dict['CAPACITY'].append(capacity)
 
-                    break
+                break
             except:
-                pass
+                vsl_mmsi_dict['VSL_NM'].append(vsl_name)
+                vsl_mmsi_dict['mmsi_no'].append(0)
+                vsl_mmsi_dict['IMO'].append(0)
+                vsl_mmsi_dict['CAPACITY'].append(0)
 
     driver.close()
     return vsl_mmsi_dict
-
 
 # def orbcomn_fleet_delete(username='sewonkim', password='sejong@)@!12'):
 #     try:
